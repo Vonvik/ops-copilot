@@ -1,0 +1,77 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# =========================
+# Entornos / tooling
+# =========================
+.venv/
+venv/
+env/
+.python-version
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.cache/
+
+# =========================
+# Coverage
+# =========================
+.coverage
+.coverage.*
+htmlcov/
+coverage/
+coverage.xml
+
+# =========================
+# IDE / Editors
+# =========================
+.vscode/
+.idea/
+*.iml
+
+# =========================
+# OS
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# Secretos / Entorno
+# =========================
+.env
+.env.*
+!.env.example   # <- sí queremos versionar el ejemplo
+
+# =========================
+# Build / Distribución
+# =========================
+build/
+dist/
+*.egg-info/
+
+# =========================
+# Alembic
+# =========================
+# ¡NO ignores tus migraciones! (queremos versionarlas)
+alembic/versions/__pycache__/
+alembic/versions/*.pyc
+
+# Si usaste "migrations/" por error antes, no lo ignores:
+# (Elimina cualquier "migrations/" previo del .gitignore)
+
+# =========================
+# Logs / Docker
+# =========================
+*.log
+
+# =========================
+# Tests
+# =========================
+# ¡NO ignores tests! Asegúrate de NO tener "test/" o "tests/" aquí

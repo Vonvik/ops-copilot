@@ -1,0 +1,22 @@
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E","F","I","B","UP","SIM","ARG","PL","PLC","PLR","PLE"]
+ignore = ["E203"]
+
+[tool.ruff.lint.per-file-ignores]
+"alembic/versions/*.py" = ["E402","F401","F403","F405"]
+"alembic/env.py" = ["E402"]
+"app/api/deps.py" = ["B008"]
+"app/api/routes/*.py" = ["B008"]
+"app/routes/*.py" = ["B008","B904"]
+"app/routes/api_v1.py" = ["B008","B904"]
+"app/routes/processed.py" = ["B008"]
+"app/db/base.py" = ["PLW0603"]
+"app/lifespan.py" = ["PLC0415"]
+"tests/*.py" = ["PLR2004","E501"]

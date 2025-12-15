@@ -1,0 +1,32 @@
+# Entornos locales
+.venv/
+env/
+venv/
+.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Git
+.git
+.gitignore
+
+# Herramientas / caches
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.alembic_cache/
+
+# Builds / distribución
+.dist/
+build/
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# Logs u otros archivos generados
+*.log
