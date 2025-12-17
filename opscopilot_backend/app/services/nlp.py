@@ -10,16 +10,13 @@ from spacy.language import Language
 
 logger = logging.getLogger(__name__)
 
-# Nombre del modelo configurable por env (por si quieres cambiarlo sin redeploy)
 _MODEL_NAME = os.getenv("SPACY_ES_MODEL", "es_core_news_md")
-
-# Cache del pipeline para no recargar en cada request
 _nlp_es: Optional[Language] = None
 
 
 def get_nlp_es() -> Language:
     """
-    Carga el modelo una sola vez (lazy-load).
+    Carga el modelo UNA sola vez (lazy).
     Si no está disponible, hace fallback a spacy.blank("es") para que la API no caiga.
     """
     global _nlp_es
@@ -30,19 +27,20 @@ def get_nlp_es() -> Language:
         _nlp_es = spacy.load(_MODEL_NAME)
         logger.info("spaCy model loaded: %s", _MODEL_NAME)
     except Exception:
-        logger.exception("Failed to load spaCy model '%s'. Falling back to spacy.blank('es').", _MODEL_NAME)
+        logger.exception(
+            "Failed to load spaCy model '%s'. Falling back to spacy.blank('es').",
+            _MODEL_NAME,
+        )
         _nlp_es = spacy.blank("es")
 
     return _nlp_es
 
 
-# Expresión regular para importes tipo "23,45 €", "23.45€", "23 €", etc.
 _AMOUNT_PATTERN = re.compile(
     r"(\d+[.,]\d{1,2})\s*€?|\b(\d+)\s*€",
     re.UNICODE,
 )
 
-# Expresión regular simple para fechas tipo "12/10/2025" o "12-10-25"
 _DATE_PATTERN = re.compile(
     r"\b(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})\b",
     re.UNICODE,
@@ -50,13 +48,6 @@ _DATE_PATTERN = re.compile(
 
 
 def _normalize_amount(raw: str) -> Optional[float]:
-    """
-    Normaliza un importe en formato europeo/español (coma o punto) a float.
-    Ejemplos:
-      "23,45" -> 23.45
-      "23.45" -> 23.45
-      "1.234,56" -> 1234.56 (approx)
-    """
     if not raw:
         return None
 
@@ -74,13 +65,6 @@ def _normalize_amount(raw: str) -> Optional[float]:
 
 
 def extract_fields_from_text(text: str) -> Dict[str, Any]:
-    """
-    Recibe un texto libre y devuelve:
-    - item
-    - amount
-    - date_str
-    - confidences
-    """
     nlp = get_nlp_es()
     doc = nlp(text)
 
@@ -117,8 +101,9 @@ def extract_fields_from_text(text: str) -> Dict[str, Any]:
         item_conf = 0.0
 
     confidences = {"item": item_conf, "amount": amount_conf, "date_str": date_conf}
-    non_zero = [v for v in confidences.values() if v > 0]
-    overall_confidence = sum(non_zero) / len(non_zero) if non_zero else 0.0
+
+    non_zero_values = [v for v in confidences.values() if v > 0]
+    overall_confidence = sum(non_zero_values) / len(non_zero_values) if non_zero_values else 0.0
 
     return {
         "item": item,
@@ -129,8 +114,3 @@ def extract_fields_from_text(text: str) -> Dict[str, Any]:
         "language": getattr(doc, "lang_", "es"),
         "raw_text": text,
     }
-
-
-if __name__ == "__main__":
-    sample = "Supermercado DIA 23,45 € 12/10/2025"
-    print(extract_fields_from_text(sample))

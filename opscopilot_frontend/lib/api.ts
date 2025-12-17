@@ -9,30 +9,44 @@ import type { NLPExtraction, NLPHistoryItem, NLPConfidenceRule, NLPRuleAction } 
 const isServer = typeof window === "undefined";
 
 /**
- * Base pública de la API que usa el frontend (CSR y SSR).
- * Lo ideal es definirla en .env.local:
+ * Base pública (Render): preferimos NEXT_PUBLIC_API_BASE_URL.
+ * Puede ser:
+ *   - https://opscopilot-api.onrender.com
+ *   - https://opscopilot-api.onrender.com/api/v1
  *
- *   NEXT_PUBLIC_API_URL="http://127.0.0.1:8000/api/v1"
- *
- * Si no está definida, usamos ese valor por defecto.
+ * Si no está, en local cae a http://127.0.0.1:8000
  */
 const RAW_PUBLIC_BASE = (
-  process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000/api/v1"
+  process.env.NEXT_PUBLIC_API_BASE_URL ??
+  process.env.NEXT_PUBLIC_API_URL ??
+  "http://127.0.0.1:8000"
 ).trim();
 
 /**
- * Base interna para llamadas desde el servidor (SSR/ISR) si tienes
- * un hostname distinto para el backend desde el contenedor de Next.
- * Si no la usas, puede quedarse vacía.
- *
- *   INTERNAL_API_URL="http://backend:8000/api/v1"
+ * Base interna para SSR (opcional). En Render suele ser el mismo dominio público.
+ * Puede ser:
+ *   INTERNAL_API_URL="https://opscopilot-api.onrender.com"
+ *   INTERNAL_API_URL="https://opscopilot-api.onrender.com/api/v1"
  */
-const RAW_INTERNAL_BASE = (process.env.INTERNAL_API_URL ?? "").trim();
+const RAW_INTERNAL_BASE = (
+  process.env.INTERNAL_API_URL ??
+  process.env.API_BASE_URL ??
+  ""
+).trim();
 
-// En servidor: preferimos INTERNAL_API_URL (absoluta). En cliente: NEXT_PUBLIC_API_URL.
-const EFFECTIVE_BASE = isServer ? (RAW_INTERNAL_BASE || RAW_PUBLIC_BASE) : RAW_PUBLIC_BASE;
-// Normaliza (quita barras finales)
+function ensureApiV1(base: string): string {
+  const b = (base || "").replace(/\/+$/, "");
+  if (!b) return "";
+  return b.endsWith("/api/v1") ? b : `${b}/api/v1`;
+}
+
+// En servidor: preferimos INTERNAL_API_URL (si existe). En cliente: NEXT_PUBLIC_API_BASE_URL.
+const EFFECTIVE_BASE = isServer
+  ? (ensureApiV1(RAW_INTERNAL_BASE) || ensureApiV1(RAW_PUBLIC_BASE))
+  : ensureApiV1(RAW_PUBLIC_BASE);
+
 const BASE_URL = EFFECTIVE_BASE.replace(/\/+$/, "");
+
 
 /** Une base + path y valida absoluta en servidor */
 function joinUrl(base: string, path: string): string {
